@@ -2,54 +2,51 @@
 
 (require "io.rkt")
 
-(struct csv-metadata ([body : (HashTable String (Listof String))]
-                      [header : (Listof String)]
-                      [n-header-line : Integer])
-        #:transparent)
+(: csv-split (-> String Char (Listof String)))
+(define (csv-split str sep)
+  (let split-all ([chars : (Listof Char) (string->list str)])
+    (: result (Pairof String Integer))
+    (define result
+      (let split-until-sep ([chars : (Listof Char) chars]
+                            [buffer : String ""]
+                            [iteration : Integer 0]
+                            [ignore-sep? : Boolean #f])
+        (cond
+          [(empty? chars) (cons buffer iteration)]
+          [(and (not ignore-sep?) (equal? (first chars) sep)) (cons buffer (+ iteration 1))]
+          [(equal? (first chars) #\newline) (split-until-sep  (rest chars) buffer (+ iteration 1) ignore-sep?)]
+          [(equal? (first chars) #\") (split-until-sep (rest chars) buffer (+ iteration 1) (not ignore-sep?))]
+          [else
+            (split-until-sep (rest chars) (string-append buffer (string (first chars))) (+ iteration 1) ignore-sep?)])))
+    (cond
+      [(empty? chars) '()]
+      [else
+        (cons (car result) (split-all (list-tail chars (cdr result))))])))
 
-(: parse-csv-header (-> (Listof String) csv-metadata))
-(define (parse-csv-header each-csv-line)
-  (let ([ht : (HashTable String (Listof String)) (make-hash)])
-    (csv-metadata 
-      ht 
-      (foldr
-        (lambda ([field : String]
-                 [fields : (Listof String)])
-          (hash-set! ht field '())
-          (cons field fields))
-        '()
-        (string-split (list-ref each-csv-line 0) "," #:trim? #f))
-      1)))
+(: csv-header-split? (-> String Boolean))
+(define (csv-header-split? header)
+  (and 
+    (equal? (string-ref header 0) #\")
+    (not (equal? (string-ref header (- (string-length header) 1)) #\"))))
 
-(: parse-csv-body-line (-> String csv-metadata Void))
-(define (parse-csv-body-line csv-body-line metadata)
-  (let* ([values : (Listof String) (string-split csv-body-line ",")]
-         [values-length : Integer (length values)])
-    (let loop ([n : Integer 0]
-               [values : (Listof String) values])
+;; (: parse-csv-header (-> (Listof String) (Pair Integer (Listof String))))
+(: parse-csv-header (-> (Listof String) (Listof String)))
+(define (parse-csv-header lines)
+  ;; (: parsed-header (Listof String))
+  ;; (define parsed-header 
+    (let combine-header ([headers : (Listof String) (string-split (first lines) "," #:trim? #f)]
+                         [traversed : Integer 1]
+                         [parsed? : Boolean #f])
       (cond
-        [(= n values-length) (void)]
+        [parsed? '()]
+        [(equal? (string-ref (first headers) 1) #\") '()]
         [else
-          (hash-set! 
-            (csv-metadata-body metadata) 
-            (list-ref (csv-metadata-header metadata) n) 
-            (append 
-              (hash-ref (csv-metadata-body metadata) (list-ref (csv-metadata-header metadata) n))
-              (list (first values))))
-          (loop (+ n 1) (rest values))]))))
+          (cons (first headers) (combine-header (rest headers) 1 #f))])))
 
-(: parse-csv-body (-> (Listof String) csv-metadata Void))
-(define (parse-csv-body csv-body-lines metadata)
-  (for-each 
-    (lambda ([line : String]) (parse-csv-body-line line metadata))
-    csv-body-lines)
-  (void))
-
-(: read-csv (-> Path-String (HashTable String (Listof String))))
+(: read-csv (-> String (Listof (Listof String))))
 (define (read-csv path)
-  (let* ([each-line : (Listof String) (string-split (read-file path) "\n")]
-         [metadata : csv-metadata (parse-csv-header each-line)])
-    (parse-csv-body (list-tail each-line (csv-metadata-n-header-line metadata)) metadata)
-    (csv-metadata-body metadata)))
+  (let ([lines : (Listof String) (string-split path "\n")])
+    (displayln (parse-csv-header lines))
+    '()))
 
-(read-csv "samples/food.csv")
+;; (read-csv (read-file "currency.csv"))
