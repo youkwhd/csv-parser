@@ -41,7 +41,7 @@
 (define (f str)
   ;; (let )
   (cond
-    [(empty? str) '()]
+    [(string-empty? str) '()]
     [else
       (: field-length Integer)
       (define field-length (let find-length ([nth : Integer 0]
@@ -49,14 +49,16 @@
                                  [str : String str])
                   (cond
                     [(string-empty? str) nth]
-                    [(and (string-prefix? str "\n") (not inside-quote?)) (+ nth 1)]
-                    [(and (string-prefix? str ",") (not inside-quote?)) (+ nth 1)]
+                    [(and (string-prefix? str "\n") (not inside-quote?)) nth]
+                    [(and (string-prefix? str ",") (not inside-quote?)) nth]
                     [(string-prefix? str "\\\"") (find-length (+ nth 2) inside-quote? (substring str 2))]
                     [(string-prefix? str "\"") (find-length (+ nth 1) (not inside-quote?) (substring str 1))]
                     [else (find-length (+ nth 1) inside-quote? (substring str 1))])))
-      (if (> field-length 0)
-        (cons (substring str 0 (- field-length 1)) (f (substring str field-length)))
-        '())]))
+      (cons 
+        (substring str 0 field-length) 
+        (f (substring str (if (> (+ field-length 1) (string-length str))
+                            (string-length str)
+                            (+ field-length 1)))))]))
 
 (f "\"ad,\n\ndr\",jakeaddr\n123,233")
 
