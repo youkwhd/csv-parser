@@ -6,10 +6,6 @@
 (define (boolean->integer bool)
   (if bool 1 0))
 
-(: parse-line (-> String (Listof String)))
-(define (parse-line csv)
-  '())
-
 (: string-empty? (-> String Boolean))
 (define (string-empty? str)
   (equal? (string-length str) 0))
@@ -33,22 +29,31 @@
       [(string=? (substring str 0 (string-length t2)) t2) index]
       [else (loop (substring str 1) (+ index 1))])))
 
-(: quote-wrapped? (-> String Boolean))
-(define (quote-wrapped? str)
-  #t)
-
-(: parse-csv (-> String (Listof String)))
-(define (parse-csv csv)
-  (let loop ([csv : String csv])
-    (define quote-wrapped? (string-prefix? csv "\""))
-    (define index-of-delim (if quote-wrapped? (string-find csv "\",") (string-find-either csv "," "\n")))
-    (cond
-      [(equal? index-of-delim -1) '()]
-      [else
-        ;; (displayln (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim))
-        ;; (displayln "")
-        (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) (loop (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?)))))])))
+(: parse-csv (-> String (Listof (Listof String))))
+(define (parse-csv csv-t)
+  (cond
+    [(string-empty? csv-t) '()]
+    [else
+      (: a (Listof String))
+      (define a 
+        (let loop ([csv : String csv-t])
+          (define quote-wrapped? (string-prefix? csv "\""))
+          (define index-of-delim (if quote-wrapped? (string-find-either csv "\"," "\"\n") (string-find-either csv "," "\n")))
+          (define end-of-row? (or 
+                                (and (= (string-find csv ",") -1) (not (= (string-find csv "\n") -1)))
+                                (and (not (= (string-find csv ",") -1)) (< (string-find csv "\n") (string-find csv ",")))))
+          (cond
+            [(equal? index-of-delim -1) 
+             (set! csv-t "")
+             '()]
+            [end-of-row? 
+              (set! csv-t (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?))))
+              (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) '())]
+            [else
+              (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) (loop (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?)))))])))
+      (cons a (parse-csv csv-t))]))
 
 ;; (parse-csv (read-file "currency.csv"))
-(parse-csv (read-file "samples/food.csv"))
-;; (parse-csv (read-file "color.csv"))
+;; (parse-csv (read-file "samples/food.csv"))
+
+(parse-csv (read-file "color.csv"))
