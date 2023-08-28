@@ -34,9 +34,9 @@
   (cond
     [(string-empty? csv-t) '()]
     [else
-      (: a (Listof String))
-      (define a 
-        (let loop ([csv : String csv-t])
+      (: parsed-line (Listof String))
+      (define parsed-line
+        (let parse-line ([csv : String csv-t])
           (define quote-wrapped? (string-prefix? csv "\""))
           (define index-of-delim (if quote-wrapped? (string-find-either csv "\"," "\"\n") (string-find-either csv "," "\n")))
           (define end-of-row? (or 
@@ -50,8 +50,8 @@
               (set! csv-t (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?))))
               (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) '())]
             [else
-              (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) (loop (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?)))))])))
-      (cons a (parse-csv csv-t))]))
+              (cons (substring csv (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) (parse-line (substring csv (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?)))))])))
+      (cons parsed-line (parse-csv csv-t))]))
 
 ;; (parse-csv (read-file "currency.csv"))
 ;; (parse-csv (read-file "samples/food.csv"))
