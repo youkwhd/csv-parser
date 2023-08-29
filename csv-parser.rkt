@@ -38,9 +38,9 @@
 
           (cond
             [(cdr field)
-             (cons (append fields (list (remove-quote-capsulated (caar field)))) (cdar field))]
+             (cons (append fields (list (transform-double-quote (remove-quote-capsulated (caar field))))) (cdar field))]
             [else
-              (parse-line (cdar field) (append fields (list (remove-quote-capsulated (caar field)))))])))
+              (parse-line (cdar field) (append fields (list (transform-double-quote (remove-quote-capsulated (caar field))))))])))
       (cons (car parsed-fields) (parse-csv (cdr parsed-fields) #:delimiter delimiter))]))
 
 (provide (all-defined-out))
