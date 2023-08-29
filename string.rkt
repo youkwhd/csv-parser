@@ -4,11 +4,22 @@
 (define (string-empty? str)
   (equal? (string-length str) 0))
 
+(: quote-capsulated? (-> String Boolean))
+(define (quote-capsulated? str)
+    (and (>= (string-length str) 2) (string-prefix? str "\"") (string-suffix? str "\"")))
+
 (: remove-quote-capsulated (-> String String))
 (define (remove-quote-capsulated str)
-  (if (and (>= (string-length str) 2) (string-prefix? str "\"") (string-suffix? str "\""))
+  (if (quote-capsulated? str)
     (substring str 1 (- (string-length str) 1))
     str))
+
+(: trim-quote-capsulated (-> String String))
+(define (trim-quote-capsulated str)
+  (let ([trimmed-str : String (string-trim str)])
+    (if (quote-capsulated? trimmed-str)
+      trimmed-str
+      str)))
 
 (: transform-double-quote (-> String String))
 (define (transform-double-quote str)
