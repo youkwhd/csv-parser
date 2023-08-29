@@ -40,8 +40,16 @@
             (parse-line (cdr b) (append fields (list (car b))))])))
       (cons (car zz) (f (cdr zz)))]))
 
-(f (read-file "currency.csv"))
+(: remove-quote-capsulated (-> String String))
+(define (remove-quote-capsulated str)
+  (if (and (string-prefix? str "\"") (string-suffix? str "\""))
+    (substring str 1 (- (string-length str) 1))
+    str))
 
-;; (f (read-file "currency.csv"))
+;; (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/food.csv")))
+;; (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/currency.csv")))
+(map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/color.csv")))
+
 ;; (f (read-file "samples/food.csv"))
-;; (f (read-file "color.csv"))
+;; (f (read-file "samples/currency.csv"))
+;; (f (read-file "samples/color.csv"))
