@@ -25,8 +25,8 @@
                            (+ (car field-metadata) 1))))
     (cdr field-metadata)))
 
-(: f (-> String (Listof (Listof String))))
-(define (f str)
+(: parse-csv-raw (-> String (Listof (Listof String))))
+(define (parse-csv-raw str)
   (cond
     [(string-empty? str) '()]
     [else
@@ -42,18 +42,12 @@
              (cons (append fields (list (caar field))) (cdar field))]
             [else
               (parse-line (cdar field) (append fields (list (caar field))))])))
-      (cons (car parsed-fields) (f (cdr parsed-fields)))]))
+      (cons (car parsed-fields) (parse-csv-raw (cdr parsed-fields)))]))
 
-(: remove-quote-capsulated (-> String String))
-(define (remove-quote-capsulated str)
-  (if (and (>= (string-length str) 2) (string-prefix? str "\"") (string-suffix? str "\""))
-    (substring str 1 (- (string-length str) 1))
-    str))
+(: parse-csv (-> String (Listof (Listof String))))
+(define (parse-csv str)
+  (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (parse-csv-raw str)))
 
-;; (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/food.csv")))
-;; (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/currency.csv")))
-(map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (f (read-file "samples/color.csv")))
-
-;; (f (read-file "samples/food.csv"))
-;; (f (read-file "samples/currency.csv"))
-;; (f (read-file "samples/color.csv"))
+(parse-csv (read-file "samples/food.csv"))
+;; (parse-csv (read-file "samples/currency.csv"))
+;; (parse-csv (read-file "samples/color.csv"))
