@@ -3,6 +3,12 @@ CSV Parser
 
 Easy to use CSV parser compliant to RFC 4180
 
+Installation
+------------
+
+Just copy and paste csv-parser.rkt and string.rkt, Or merge
+string.rkt into csv-parser.rkt to make it as one.
+
 Similiar Projects
 -----------------
 
