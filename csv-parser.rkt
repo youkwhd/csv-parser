@@ -36,31 +36,42 @@
       (cons "" "")
       (cons (substring str 0 index-to-split) (substring str (+ index-to-split 1))))))
 
-;; (: f (-> String (Listof (Listof String))))
-(: f (-> String (Listof String)))
+(: f (-> String (Listof (Listof String))))
 (define (f str)
-  ;; (let )
   (cond
     [(string-empty? str) '()]
     [else
-      (: field-length Integer)
-      (define field-length (let find-length ([nth : Integer 0]
-                                 [inside-quote? : Boolean #f]
-                                 [str : String str])
-                  (cond
-                    [(string-empty? str) nth]
-                    [(and (string-prefix? str "\n") (not inside-quote?)) nth]
-                    [(and (string-prefix? str ",") (not inside-quote?)) nth]
-                    [(string-prefix? str "\\\"") (find-length (+ nth 2) inside-quote? (substring str 2))]
-                    [(string-prefix? str "\"") (find-length (+ nth 1) (not inside-quote?) (substring str 1))]
-                    [else (find-length (+ nth 1) inside-quote? (substring str 1))])))
-      (cons 
-        (substring str 0 field-length) 
-        (f (substring str (if (> (+ field-length 1) (string-length str))
-                            (string-length str)
-                            (+ field-length 1)))))]))
+      (: zz (Pairof (Listof String) String))
+      (define zz (let parse-line ([str : String str]
+                                  [fields : (Listof String) '()])
+        (: field-length (Pairof Integer Boolean))
+        (define field-length (let find-length ([nth : Integer 0]
+                                               [inside-quote? : Boolean #f]
+                                               [str : String str])
+                               (cond
+                                 [(string-empty? str) (cons nth #t)]
+                                 [(and (string-prefix? str "\n") (not inside-quote?)) (cons nth #t)]
+                                 [(and (string-prefix? str ",") (not inside-quote?)) (cons nth #f)]
+                                 [(string-prefix? str "\\\"") (find-length (+ nth 2) inside-quote? (substring str 2))]
+                                 [(string-prefix? str "\"") (find-length (+ nth 1) (not inside-quote?) (substring str 1))]
+                                 [else (find-length (+ nth 1) inside-quote? (substring str 1))])))
+        (: b (Pairof String String))
+        (define b
+          (let parse-field ([str : String str]
+                            [field : String ""])
+            (cond
+              [(string-empty? str) (cons field "")]
+              [else
+                (cons (substring str 0 (car field-length)) (substring str (if (> (+ (car field-length) 1) (string-length str))
+                                              (string-length str)
+                                              (+ (car field-length) 1))))])))
 
-(f "\"ad,\n\ndr\",jakeaddr\n123,233")
+        (cond
+          [(cdr field-length)
+           (cons (append fields (list (car b))) (cdr b))]
+          [else
+            (parse-line (cdr b) (append fields (list (car b))))])))
+      (cons (car zz) (f (cdr zz)))]))
 
 (: parse-csv (-> String (Listof (Listof String))))
 (define (parse-csv str)
@@ -87,6 +98,10 @@
             [else
               (cons (substring line (+ 0 (boolean->integer quote-wrapped?)) index-of-delim) (parse-line (substring line (+ (+ index-of-delim 1) (boolean->integer quote-wrapped?)))))])))
       (cons parsed-line (parse-csv str))]))
+
+
+(f (read-file "currency.csv"))
+
 
 ;; (parse-csv (read-file "currency.csv"))
 ;; (parse-csv (read-file "samples/food.csv"))
