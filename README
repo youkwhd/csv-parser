@@ -6,7 +6,7 @@ Simple to use CSV parser compliant to RFC 4180
 Similiar Projects
 -----------------
 
-This project is much slower compared to these projects:
+This parser is much slower compared to these parser:
 
 - https://docs.racket-lang.org/csv-reading/index.html
 - https://docs.racket-lang.org/csv/index.html
