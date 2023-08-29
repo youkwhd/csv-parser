@@ -46,3 +46,5 @@
 (: parse-csv (-> String (Listof (Listof String))))
 (define (parse-csv str)
   (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (parse-csv-raw str)))
+
+(provide (all-defined-out))
