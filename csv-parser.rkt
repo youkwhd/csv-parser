@@ -30,18 +30,19 @@
   (cond
     [(string-empty? str) '()]
     [else
-      (: zz (Pairof (Listof String) String))
-      (define zz (let parse-line ([str : String str]
-                                  [fields : (Listof String) '()])
-        (: field (Pairof (Pairof String String) Boolean))
-        (define field (parse-field str))
-        
-        (cond
-          [(cdr field)
-           (cons (append fields (list (caar field))) (cdar field))]
-          [else
-            (parse-line (cdar field) (append fields (list (caar field))))])))
-      (cons (car zz) (f (cdr zz)))]))
+      (: parsed-fields (Pairof (Listof String) String))
+      (define parsed-fields 
+        (let parse-line ([str : String str]
+                         [fields : (Listof String) '()])
+          (: field (Pairof (Pairof String String) Boolean))
+          (define field (parse-field str))
+
+          (cond
+            [(cdr field)
+             (cons (append fields (list (caar field))) (cdar field))]
+            [else
+              (parse-line (cdar field) (append fields (list (caar field))))])))
+      (cons (car parsed-fields) (f (cdr parsed-fields)))]))
 
 (: remove-quote-capsulated (-> String String))
 (define (remove-quote-capsulated str)
