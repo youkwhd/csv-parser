@@ -1,6 +1,5 @@
 #lang typed/racket
 
-(require "io.rkt")
 (require "string.rkt")
 
 (: parse-field (-> String (Pairof (Pairof String String) Boolean)))
@@ -47,7 +46,3 @@
 (: parse-csv (-> String (Listof (Listof String))))
 (define (parse-csv str)
   (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (parse-csv-raw str)))
-
-(parse-csv (read-file "samples/food.csv"))
-;; (parse-csv (read-file "samples/currency.csv"))
-;; (parse-csv (read-file "samples/color.csv"))
