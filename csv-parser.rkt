@@ -24,8 +24,8 @@
                            (+ (car field-metadata) 1))))
     (cdr field-metadata)))
 
-(: parse-csv-raw (-> String (Listof (Listof String))))
-(define (parse-csv-raw str)
+(: parse-csv (-> String (Listof (Listof String))))
+(define (parse-csv str)
   (cond
     [(string-empty? str) '()]
     [else
@@ -38,13 +38,9 @@
 
           (cond
             [(cdr field)
-             (cons (append fields (list (caar field))) (cdar field))]
+             (cons (append fields (list (remove-quote-capsulated (caar field)))) (cdar field))]
             [else
-              (parse-line (cdar field) (append fields (list (caar field))))])))
-      (cons (car parsed-fields) (parse-csv-raw (cdr parsed-fields)))]))
-
-(: parse-csv (-> String (Listof (Listof String))))
-(define (parse-csv str)
-  (map (lambda ([fields : (Listof String)]) (map remove-quote-capsulated fields)) (parse-csv-raw str)))
+              (parse-line (cdar field) (append fields (list (remove-quote-capsulated (caar field)))))])))
+      (cons (car parsed-fields) (parse-csv (cdr parsed-fields)))]))
 
 (provide (all-defined-out))
