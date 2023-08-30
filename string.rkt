@@ -27,7 +27,7 @@
     (cond
       [(string-empty? str) ""]
       [(and (>= (string-length str) 2) (string=? (substring str 0 2) "\"\""))
-       (string-append "\\\"" (loop (substring str 2)))]
+       (string-append "\"" (loop (substring str 2)))]
       [else
         (string-append (substring str 0 1) (loop (substring str 1)))])))
 
