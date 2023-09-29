@@ -13,7 +13,6 @@
         [(string-empty? str) (cons nth #t)]
         [(and (string-prefix? str "\n") (not inside-quote?)) (cons nth #t)]
         [(and (string-prefix? str delimiter) (not inside-quote?)) (cons nth #f)]
-        [(string-prefix? str "\\\"") (field-metadata (+ nth 2) inside-quote? (substring str 2))]
         [(string-prefix? str "\"") (field-metadata (+ nth 1) (not inside-quote?) (substring str 1))]
         [else (field-metadata (+ nth 1) inside-quote? (substring str 1))])))
 
